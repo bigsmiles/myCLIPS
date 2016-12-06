@@ -1,0 +1,43 @@
+system_start_time: 0  112620185841
+create alpha match : cTN100 6d93c0
+create alpha match : cTN100 6d93c0
+before mask: 0
+right join realase : 6d93c0 cTN100 depth: 3 numOfTmp: 5 mask: 20
+create alpha match : cTN100 6d93c0
+before mask: 20
+right join realase : 6d93c0 cTN100 depth: 2 numOfTmp: 4 mask: 10
+before mask: 10
+create alpha match : cTN100 6d93c0
+first join realase : 6d93c0 cTN100 depth: 1 numOfTmp: 3 mask: 18
+before mask: 0
+right join realase : 6d93c0 cTN100 depth: 6 numOfTmp: 2 mask: 4
+before mask: 4
+first join realase : 6d93c0 cTN100 depth: 1 numOfTmp: 8 mask: 104
+before mask: 104
+right join realase : 6d93c0 cTN100 depth: 4 numOfTmp: 7 mask: 184
+before mask: 184
+right join realase : 6d93c0 cTN100 depth: 6 numOfTmp: 6 mask: 1c4
+before mask: 1c4
+right join realase : 6d93c0 cTN100 depth: 9 numOfTmp: 1 mask: 1c6
+create alpha match : cTN64 1a7d590
+create alpha match : cTN64 1a7d590
+before mask: 0
+first join realase : 1a7d590 cTN64 depth: 1 numOfTmp: 4 mask: 10
+before mask: 10
+right join realase : 1a7d590 cTN64 depth: 6 numOfTmp: 6 mask: 50
+before mask: 50
+right join realase : 1a7d590 cTN64 depth: 4 numOfTmp: 5 mask: 70
+create alpha match : cTN64 1a7d590
+try : 7181248 2 4 1c6 28
+before mask: 0
+first join realase : 1a7d590 cTN64 depth: 1 numOfTmp: 3 mask: 8
+before mask: 8
+right join realase : 1a7d590 cTN64 depth: 5 numOfTmp: 2 mask: c
+before mask: c
+right join realase : 1a7d590 cTN64 depth: 4 numOfTmp: 1 mask: e
+create alpha match : cTN64 1a7d990
+before mask: 0
+first join realase : 1a7d990 cTN64 depth: 1 numOfTmp: 4 mask: 10
+input_time_over 112620186972 ,total: 0,line_count 5
+try : 7181248 2 4 1c6 28
+search_time: 112620187001 0.000055 0.000000
