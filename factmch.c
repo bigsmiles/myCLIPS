@@ -539,7 +539,7 @@ static void ProcessFactAlphaMatch(
    struct joinNode *listOfJoins;
    unsigned long hashValue;
 
-   //printf("------in ProcessFactAlphaMatch: %s %d %d---\n", theFact->whichDeftemplate->header.name->contents, theMarks == NULL ? 1 : theMarks->whichField, ((struct patternNodeHeader *) &thePattern->header));
+ 
   /*============================================*/
   /* Create the hash value for the alpha match. */
   /*============================================*/
@@ -557,7 +557,6 @@ static void ProcessFactAlphaMatch(
   QueryPerformanceCounter(&cur_time);
   theFact->timestamp = cur_time.QuadPart;
 #else if           //从fact字符中解析出时间戳
-
   DATA_OBJECT  arg;
   EnvGetFactSlot(theEnv, theFact, "timestamp", &arg);
   if (GetType(arg) == INTEGER){
@@ -570,14 +569,14 @@ static void ProcessFactAlphaMatch(
 	  printf("not timestamp\n");
   }
 #endif
+
 #endif
 
-#if THREAD
-  
+
   theMatch = CreateAlphaMatch(GetEnvironmentByIndex(1),theFact,theMarks,(struct patternNodeHeader *) &thePattern->header,hashValue);
   theMatch->owner = &thePattern->header;
   theFact->alphaMatch = theMatch;
-#endif
+
   /*=======================================================*/
   /* Add the pattern to the list of matches for this fact. */
   /*=======================================================*/
@@ -594,11 +593,6 @@ static void ProcessFactAlphaMatch(
   /* Send the partial match to the joins connected to this pattern. */
   /*================================================================*/
 #if THREAD
-  //add by xuchao
-  //EnterCriticalSection(&g_move); //remove ok?
-
-  /* move to assert(fact)*/
-  //EnterCriticalSection(&g_fact_join);
 
   /*
   一个alpha节点后继节点可能是多个beta节点，factNotOnNodeMask表示该fact还
@@ -606,66 +600,9 @@ static void ProcessFactAlphaMatch(
   初试值为0，表示都没添加到beta节点。
   */
 #if OPTIMIZE
-  //theFact->factNotOnNodeMask = 0;
+ 
   theFact->alphaMatch = NULL;
-  //printf("numOfBeta: %d %s\n", theFact->whichDeftemplate->numOfBeta, theFact->whichDeftemplate->header.name->contents);
-  /**
-  for (listOfJoins = thePattern->header.entryJoin;
-	  listOfJoins != NULL;
-	  listOfJoins = listOfJoins->rightMatchNode)
-  {
-	  if (strcmp(theFact->whichDeftemplate->header.name->contents, "cTN64") == 0){
-		  printf("num64 %d %d %d %lld\n", listOfJoins->depth,listOfJoins->numOfTmp,theFact->whichDeftemplate->numOfBeta,theFact->timestamp);
-	  }
-	  if (strcmp(theFact->whichDeftemplate->header.name->contents, "cTN100") == 0){
-		  printf("num100 %d %d %d %lld\n", listOfJoins->depth,listOfJoins->numOfTmp,theFact->whichDeftemplate->numOfBeta,theFact->timestamp);
-	  }
-  }
-  **/
-#else  //原来的方法是使用了链表，后来改进为位运算
-  struct factNotOnJoinNode **p = &theFact->factNotOnNode;
-  struct factNotOnJoinNode *tail = NULL;
-  //printf("%d %d\n", *p, theFact->factNotOnNode);
-  //printf("fact: %s tail:%d\n", theFact->whichDeftemplate->header.name->contents, tail);
 
-  if (*p == NULL){
-	  *p = (struct factNotOnJoinNode*)malloc(sizeof(struct factNotOnJoinNode));
-	  (*p)->join = NULL; (*p)->next = NULL;
-	  tail = (struct factNotOnJoinNode*)(*p);
-	  if (tail != *p){
-		  printf(" not equal\n");
-	  }
-  }
-  else{
-	  //tail = *p;
-	  tail = (struct factNotOnJoinNode*)(*p);
-	  if (tail != *p){
-		  printf(" not equal 2\n");
-	  }
-	  struct factNotOnJoinNode* tmp = tail;
-	  int cnt = 0;
-	  struct factNotOnJoinNode* tmp1 = tmp->next;
-	  struct factNotOnJoinNode* tmp2 = tail->next;
-	  //printf("here!\n");
-	  while (tail->next != NULL){
-		  cnt += 1;
-		  tail = tail->next;
-	  }
-  }
-  //printf("aftern new factNotOnJoinNode: %d %d\n", *p, theFact->factNotOnNode);
-  //printf("fact: %s tail:%d\n", theFact->whichDeftemplate->header.name->contents,tail);
-  for (listOfJoins = thePattern->header.entryJoin;
-	  listOfJoins != NULL;
-	  listOfJoins = listOfJoins->rightMatchNode)
-  {
-	  struct factNotOnJoinNode* one = (struct factNotOnJoinNode*)malloc(sizeof(struct factNotOnJoinNode));
-	  //printf("fact not on join : %d %d %s\n", listOfJoins,theFact,theFact->whichDeftemplate->header.name->contents);
-	  one->join = listOfJoins;
-	  one->next = NULL;
-	  tail->next = one;
-	  //tail = tail->next;
-	  tail = one;
-  }
 #endif
  
 #endif

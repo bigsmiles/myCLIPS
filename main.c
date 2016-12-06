@@ -65,13 +65,12 @@ void EnvUserFunctions(void *);
 #if THREAD 
 
 CRITICAL_SECTION g_cs;
-//CRITICAL_SECTION g_debug; //解决同步问题?
+
 CRITICAL_SECTION g_csDebug, g_runDebug, g_move,g_fact_join;//g_csDebug1, g_csDebug2,
 HANDLE g_debug;
 HANDLE g_hSemaphoreBuffer,g_hSemaphoreBufferOfThread1, g_hSemaphoreBufferOfThread2;
 extern int totalAddActiveNode,totalGetActiveNode[4];
 
-char print_file_path[3][60] = { "","D:\\VS\\testCLPS\\testCLIPS\\Debug\\result_window0821a.txt", "D:\\VS\\testCLPS\\testCLIPS\\Debug\\result_window0821b.txt" };
 FILE *print_file[3];
 LARGE_INTEGER search_time1, search_time2;
 long long search_time = 0, cost_time[4] = { 0 }, run_time[4] = {0};
@@ -130,10 +129,9 @@ int main(
 	//char rule_file_path[50] = "D:\\VS\\testCLPS\\testCLIPS\\Debug\\CLIPSRule_1025.clp";
 	//char rule_file_path[50] = "D:\\VS\\testCLPS\\testCLIPS\\Debug\\CLIPSRule_723.clp";
 
-	
 	EnvLoad(theEnv, rule_file_path);
 
-#if THREAD || REALMTHREAD
+#if THREAD
 
 	EnvLoad(betaEnv, rule_file_path);
 	EnvLoad(thirdEnv, rule_file_path);
@@ -169,7 +167,6 @@ int main(
 	/**/
 #endif
 
-#if AUTOTEST
 	
 	//char fact_file_path[50] = "D:\\VS\\stdCLIPS\\Debug\\CLIPSFact_test.txt"; 
 	char fact_file_path[50] = "D:\\VS\\stdCLIPS\\Debug\\CLIPSFact_105.txt";
@@ -177,16 +174,12 @@ int main(
 	//char fact_file_path[50] = "D:\\VS\\stdCLIPS\\Debug\\CLIPSFact_723.txt";
 	
 	FILE *pFile = fopen(fact_file_path, "r");
-	print_file[1] = fopen(print_file_path[1], "w");
-	print_file[0] = fopen(print_file_path[2], "w");
 	
 	if (pFile == NULL){
 		printf("file error!\n");
 	}
 	
-	
 	LARGE_INTEGER start,end,finish,freq;
-	int cnt = 0;
 	
 	QueryPerformanceFrequency(&freq);
 	QueryPerformanceCounter(&start);
@@ -196,16 +189,12 @@ int main(
 	long long line_count = 1;
 	char tmpBuffer[200];
 	while (fgets(tmpBuffer, 100, pFile))
-	//while (line_count--)
 	{
 		
-
-		//printf("%s\n", tmpBuffer); break;
 		if (line_count++ > num_of_event)break;
-		//Sleep(10);
+
 		//if(line_count % 5 == 0)Sleep(1);
 		EnvAssertString(theEnv, tmpBuffer);
-		
 		
 	} 
 	QueryPerformanceCounter(&end);
@@ -213,7 +202,6 @@ int main(
 	
 	if (parallel_serial == 0)
 	{
-
 		hThread = (HANDLE)_beginthreadex(NULL, 0, MoveOnJoinNetworkThread, env1, 0, NULL);
 		SetThreadAffinityMask(hThread, 1 << 1);//线程指定在某个cpu运行
 		hThread1 = (HANDLE)_beginthreadex(NULL, 0, MoveOnJoinNetworkThread, env2, 0, NULL);
@@ -230,14 +218,8 @@ int main(
 	QueryPerformanceCounter(&finish);
 	
 	printf("search_time: %lld %lf %lf\n", search_time, cost_time[0] * 1.0 / freq.QuadPart, run_time[0] * 1.0 / freq.QuadPart);
-	
-	//CommandLoop(theEnv);
-#else 
-	CommandLoop(theEnv);
-	//CommandLoop(betaEnv);
-	//CommandLoop(thirdEnv);
-	
-#endif 
+
+ 
 #if THREAD
 	CloseHandle(g_hSemaphoreBufferOfThread1);
 	CloseHandle(g_hSemaphoreBufferOfThread2);

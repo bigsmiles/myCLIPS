@@ -96,8 +96,7 @@ globle void NetworkAssert(
    /* If an incremental reset is being performed and the join */
    /* is not part of the network to be reset, then return.    */
    /*=========================================================*/
-	//added for test...
-	//printf("in drive.c join->netWorkTest->value: %s\n", (char*)join->networkTest->value);
+
 
 #if (! BLOAD_ONLY) && (! RUN_TIME)
    if (EngineData(theEnv)->IncrementalResetInProgress && (join->initialize == FALSE)) return;
@@ -193,17 +192,14 @@ globle void NetworkAssertRight(
    LARGE_INTEGER cur_time;
    QueryPerformanceCounter(&cur_time);
    long long cur_system_time = (long long)cur_time.QuadPart;
-   //cur_system_time = rhsBinds->l_timeStamp;
+  
    
    /**/
    if (cur_system_time - rhsBinds->l_timeStamp > WINDOW_SIZE){
 	   lhsBinds = NULL;
-	   printf("over window size 1 %lld %lld %d\n", cur_system_time ,rhsBinds->l_timeStamp, ((cur_system_time - rhsBinds->l_timeStamp) > WINDOW_SIZE));
    }
    /**/
 
-   long long fix_l_time = rhsBinds->r_timeStamp - WINDOW_SIZE;
-   long long fix_r_time = rhsBinds->l_timeStamp + WINDOW_SIZE;
    long long rhsBinds_l_time = rhsBinds->l_timeStamp;
    long long rhsBinds_r_time = rhsBinds->r_timeStamp;
    long long lhsBinds_l_time;
@@ -219,24 +215,16 @@ globle void NetworkAssertRight(
 	  lhsBinds_r_time = lhsBinds->r_timeStamp;
 
 	  
-#if DROOLS_WINDOW
+
 	  if (cur_system_time - lhsBinds_l_time > WINDOW_SIZE)
-#else if
-	  if ((lhsBinds_l_time < fix_l_time) || (lhsBinds_r_time > fix_r_time))
-#endif 
-	  //if (llabs(lhsBinds_l_time - rhsBinds_r_time) > WINDOW_SIZE || llabs(lhsBinds_r_time - rhsBinds_l_time) > WINDOW_SIZE)
 	  {
-		  printf("over window size 2\n");
+		  
 		  struct partialMatch* tmp = lhsBinds;
 		  struct partialMatch* pre = lhsBinds->prevInMemory;
 		  lhsBinds = nextBind;
 		  //free this PM tmp;
 		  /**/
 #if FREEPM
-		  //if (lhsBinds_r_time > fix_r_time)break; //add 8-10
-		  //if (lhsBinds_r_time > rhsBinds_l_time)continue;
-		  
-		  //if (lhsBinds_r_time > fix_l_time) continue; //drools_window
 
 		  if (pre != NULL){
 			  pre->nextInMemory = lhsBinds;
@@ -442,7 +430,7 @@ globle void NetworkAssertLeft(
 	   LARGE_INTEGER large_time;
 	   
 	   QueryPerformanceCounter(&large_time);
-	   //time_t end_time = time(NULL);
+	  
 	   long long time = (long long)large_time.QuadPart;
 	   long long l_time = 0,r_time = 0;
 #if SLIDING_WINDOW
@@ -450,8 +438,6 @@ globle void NetworkAssertLeft(
 	   r_time = lhsBinds->r_timeStamp;
 #endif
 	   search_time = time;
-	   
-	   //fprintf(print_file[ThreadID],"%s %lld \n", join->ruleToActivate->header.name->contents,time);
 	   
 	   printf("%s  %lld \n", join->ruleToActivate->header.name->contents,time);
 	  
@@ -523,18 +509,16 @@ globle void NetworkAssertLeft(
    /* the appropriate action for the logic of the join. */
    /*===================================================*/
 
-   //add by xuchao for REALMTHREA
-   //printf("leftrhs: %d %d %d\n", rhsBindsIsFact,rhsBindsIsFact, rhsBinds == NULL ? 0 : 1);
+  
    int garbegeRef = FALSE;
 
 #if DROOLS_WINDOW
    LARGE_INTEGER cur_time;
    QueryPerformanceCounter(&cur_time);
    long long cur_system_time = (long long)cur_time.QuadPart;
-   //cur_system_time = lhsBinds->l_timeStamp;
+ 
    /**/
    if (cur_system_time - lhsBinds->l_timeStamp > WINDOW_SIZE){
-	   printf("over window size 3\n");
 	   rhsBinds = NULL;
    }
   
@@ -542,8 +526,7 @@ globle void NetworkAssertLeft(
    /**/
    long long l_time = lhsBinds->l_timeStamp;
    long long r_time = lhsBinds->r_timeStamp;
-   long long fix_l_time = r_time - WINDOW_SIZE;
-   long long fix_r_time = l_time + WINDOW_SIZE;
+  
    /**/
    long long factTime;
 #endif
@@ -559,42 +542,19 @@ globle void NetworkAssertLeft(
 		   int flag = 1;
 #if OPTIMIZE
 
-		   //if(((1 << join->numOfTmp) & curFact->factNotOnNodeMask) == 1)
-		   //printf("try : %d %d %d %x %d\n", curFact,join->depth, join->numOfTmp, curFact->factNotOnNodeMask, (curFact->factNotOnNodeMask >> join->numOfTmp));
 		   if (((curFact->factNotOnNodeMask>>join->numOfTmp) & 1))
 		   {
-			   //printf("flag : %d %x\n", join->numOfTmp, curFact->factNotOnNodeMask);
 			   flag = 0;
 		   }
-#else
-		   struct factNotOnJoinNode* p = curFact->factNotOnNode;
-		  
-		   //EnterCriticalSection(&g_move);
-		   while (p!= NULL){
-			   if (p->join == join){
-				   flag = 1; 
-				   break;
-			   }
-			   p = p->next;
-			  
-		   }
 #endif
-		   //LeaveCriticalSection(&g_move);
+		 
 #if SLIDING_WINDOW
 
-		   //QueryPerformanceCounter(&cur_time);
-		   //cur_system_time = (long long)cur_time.QuadPart;
-
 		   factTime = curFact->timestamp;
-		  
-		   //if (llabs(factTime - l_time) > WINDOW_SIZE || llabs(r_time - factTime) > WINDOW_SIZE)
-#if DROOLS_WINDOW
+		   cur_system_time += 10;
 		   if(cur_system_time - factTime > WINDOW_SIZE)
-#else if
-		   if ((factTime < fix_l_time || factTime > fix_r_time))
-#endif
 		   {
-			   printf("over window size 4\n");
+			  
 			   struct partialMatch* tmp = rhsBinds;
 			   struct partialMatch* pre = rhsBinds->prevInMemory;
 			   rhsBinds = rhsBinds->nextInMemory;
@@ -602,85 +562,6 @@ globle void NetworkAssertLeft(
 			   /**/
 			  
 #if FREEPM  
-#if !DROOLS_WINDOW
-			   //if (factTime > fix_r_time)  break;//8-23
-			   int useable = TRUE;
-			   long long may_be_min_time = l_time;
-			   struct partialMatch* left_memory = GetLeftBetaMemory(join, lhsBinds->hashValue);
-			   if (left_memory != NULL) may_be_min_time = min(may_be_min_time, left_memory->l_timeStamp);
-			   EnterCriticalSection(&join->nodeSection);
-			   if (join->numOfActiveNode > 0 && join->activeJoinNodeListHead->next->currentPartialMatch != NULL){
-				   may_be_min_time = min(may_be_min_time, join->activeJoinNodeListHead->next->currentPartialMatch->l_timeStamp);
-			   }
-			   if (join->numOfActiveNode > 0 && join->activeJoinNodeListHead->next->currentPartialMatch == NULL){
-				   may_be_min_time = min(may_be_min_time, ((struct fact*)(join->activeJoinNodeListHead->next->theEntity))->timestamp);
-			   }
-			   //if (join->numOfActiveNode > 0 && join->activeJoinNodeListTail->currentPartialMatch != NULL)
-				//   may_be_min_time = min(may_be_min_time, join->activeJoinNodeListTail->currentPartialMatch->l_timeStamp);
-			   
-			   LeaveCriticalSection(&join->nodeSection);
-			   struct joinNode* last_level_join = join->lastLevel;
-			   //struct joinNode* last_level_join = join;
-			   /**/
-			   long long x_alpha = 9999999999999;
-			   //while (last_level_join)
-			   {
-				   unsigned long hashoff = entryHashValue;
-				   //unsigned long hashoff = ComputeRightHashValue(GetEnvironmentByIndex(1), (struct patternNodeHeader *) last_level_join->rightSideEntryStructure);
-				   
-				   struct partialMatch* x_PM  = GetAlphaMemory(GetEnvironmentByIndex(1), (struct patternNodeHeader *) last_level_join->rightSideEntryStructure, hashoff);
-				   x_alpha = 9999999999999;
-				   if(x_PM != NULL) x_alpha= x_PM->l_timeStamp;
-				   long long x_beta = 9999999999999;
-				   EnterCriticalSection(&last_level_join->nodeSection);
-				   //if (last_level_join->threadTag == -1)
-				   {
-					   may_be_min_time = min(may_be_min_time, (min(cur_partialmatch_time[1], cur_partialmatch_time[2])));
-				   }
-				   /**
-				   if (last_level_join->numOfActiveNode > 0){//last_level_join->threadTag != -1 && 
-					   if (last_level_join->activeJoinNodeListHead->next->currentPartialMatch != NULL)
-						   x_beta = last_level_join->activeJoinNodeListHead->next->currentPartialMatch->l_timeStamp;
-					   else
-						   x_beta = ((struct fact*)(last_level_join->activeJoinNodeListHead->next->theEntity))->timestamp;
-					   
-				   }
-				   */
-				   LeaveCriticalSection(&last_level_join->nodeSection);
-				   may_be_min_time = min(may_be_min_time, min(x_alpha,x_beta));
-				   last_level_join = last_level_join->lastLevel;
-			   }
-			   /**/
-			 
-			   //if (factTime > fix_l_time)
-			   if (factTime > may_be_min_time - WINDOW_SIZE)
-			   //if (factTime > l_time - WINDOW_SIZE)
-			   {
-				   //break; 
-				   continue; 
-			   }
-
-			   EnterCriticalSection(&(MemoryData(tmp->whichEnv)->memoSection));
-			   /**/
-			   int mask = 0;
-			   struct patternNodeHeader* theHeader = (struct patternNodeHeader *) join->rightSideEntryStructure;
-			   for (struct joinNode* listOfJoins = theHeader->entryJoin;
-				   listOfJoins != NULL;
-				   listOfJoins = listOfJoins->rightMatchNode){
-				   
-				   if (listOfJoins == join)break;
-				   mask += 1;
-			   }
-			   if (tmp->refMask & (1<<mask)){
-				   tmp->refCount -= 1;
-				   tmp->refMask &= ~(1 << mask);
-			   }
-			   if (tmp->refCount > 0)
-			   {
-				   LeaveCriticalSection(&(MemoryData(tmp->whichEnv)->memoSection));
-				   continue;
-			   }
-#endif // DROOLS_WINDOW
 			   /**/
 			   // else free tmp to memory pool
 			   if (pre != NULL){
@@ -726,8 +607,7 @@ globle void NetworkAssertLeft(
 	  
 #endif	   
       join->memoryCompares++;
-	  //add by xuchao for REALMTHREA
-	 //printf("left memo: %d\n", join->memoryCompares++);
+	 
 
       /*===================================================*/
       /* If the join has no expression associated with it, */

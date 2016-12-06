@@ -783,15 +783,7 @@ globle struct partialMatch *CreateAlphaMatch(
    
    int refCount = 0;
    long long refMask = 0;
-   /**
-   for (struct joinNode* listOfJoins = theHeader->entryJoin;
-	   listOfJoins != NULL;
-	   listOfJoins = listOfJoins->rightMatchNode){
-	   refMask = refMask | (1 << refCount);
-	   refCount += 1;
-   }
-   theHeader->refCount = refCount;
-   **/
+
 
    EnterCriticalSection(&(MemoryData(theEnv)->memoSection));
 #endif
@@ -801,8 +793,6 @@ globle struct partialMatch *CreateAlphaMatch(
 #endif
 #if SLIDING_WINDOW
    theMatch->whichEnv = theEnv;
-   theMatch->refCount = refCount;
-   theMatch->refMask = refMask;
 #endif
    InitializePMLinks(theMatch);
    theMatch->betaMemory = FALSE;

@@ -32,10 +32,6 @@
 
 struct JoinNodeList *joinNodeListHead;
 
-#if ARRAY
-struct joinNode **ArrayOfJoinNode = NULL;
-int len = 0;
-#endif 
 
 struct JoinNodeList *joinNodeListTail;
 
@@ -85,24 +81,17 @@ globle struct activeJoinNode* GetBestOneActiveNode(void *theEnv, int threadID)
 	struct joinNode *tmp = NULL;
 
 
-		while (oneListNode != NULL){
+		while (oneListNode != NULL)
+		{
 
-			//if (oneListNode->join->numOfActiveNode > 0 )
-			{
-#if MUTILTHREAD
-				if ((oneListNode->join->nodeMaxSalience % 2) == threadID)
-#endif
-#if REALMTHREAD
 				if (oneListNode->join->threadTag != -1)
-#endif
 				{
 					tmp = oneListNode->join;
 					curListNode = oneListNode;
 					tmp->threadTag = -1;
 					break;
 				}
-			}
-
+	
 			oneListNode = oneListNode->next;
 		}
 		
@@ -165,17 +154,13 @@ globle struct activeJoinNode* GetBestOneActiveNode(void *theEnv, int threadID)
 
 #endif
 #if THREAD
-#if !CSECTION
-	LeaveCriticalSection(&g_cs);
-#else
+
 	LeaveCriticalSection(&(tmp->nodeSection));
-#endif
-#if REALMTHREAD
+
 	
-	if (rtnNode != NULL){
-		
+	if (rtnNode != NULL)
+	{
 		WaitForSingleObject(g_hSemaphoreBuffer, INFINITE);
-		//ReleaseSemaphore(g_hSemaphoreBuffer, 1, NULL);
 		/**/
 #if TEST_PERFORMENCE
 		LARGE_INTEGER large_time;
@@ -189,21 +174,17 @@ globle struct activeJoinNode* GetBestOneActiveNode(void *theEnv, int threadID)
 		/**/
 	}
 #endif
-
-#endif
 	return rtnNode;
 }
 /*
 添加被激活的beta节点时。保持一定优先级的“顺序”
 */
 globle void AddList(struct JoinNodeList* oneNode){
-#if THREAD
-	//EnterCriticalSection(&g_cs);
-#endif
+
 	struct JoinNodeList* p = joinNodeListHead->next;
 	//struct JoinNodeList* p = NULL;
 	
-#if !SALIENCE
+#if SALIENCE
 	/*
 	//优先级越大越在前面
 	while (p != NULL && p->join->nodeMaxSalience > oneNode->join->nodeMaxSalience){
@@ -223,19 +204,18 @@ globle void AddList(struct JoinNodeList* oneNode){
 	
 	p = NULL; //place it at list tail
 #endif
-	if (p == NULL){
+	if (p == NULL)
+	{
 		joinNodeListTail->next = oneNode;
 		oneNode->pre = joinNodeListTail;
 		joinNodeListTail = oneNode;
 	}
-	else{
+	else
+	{
 		struct JoinNodeList* pre = p->pre;
 		pre->next = oneNode; oneNode->pre = pre;
 		oneNode->next = p; p->pre = oneNode;
 	}
-#if THREAD
-	//LeaveCriticalSection(&g_cs);
-#endif
 	return;
 }
 /*
@@ -252,21 +232,9 @@ globle void AddNodeFromAlpha(
 	)
 {
 	
-	/*DATA_OBJECT timeVal;
-	long long time = 0;
-	EnvDirectGetSlot(theEnv, (void*)theFact, "time", &timeVal);
-	if (GetType(timeVal) == INTEGER){
-		
-		time = DOToLong(timeVal);
-		printf("arg1 is integer: %lld\n", time);
-	}
-	*/
-	
-	//printf("%d %s\n", curNode->depth, theFact->whichDeftemplate->header.name->contents);
 	struct activeJoinNode* oneNode = (struct activeJoinNode*) malloc(sizeof(struct activeJoinNode));
 	oneNode->currentJoinNode = curNode;
-	//theMatch = NULL;
-	oneNode->currentPartialMatch = theMatch; //null
+	oneNode->currentPartialMatch = theMatch; 
 	oneNode->curPMOnWhichSide = RHS;
 	oneNode->markers = theMarks;
 	oneNode->theEntity = theFact;
@@ -276,36 +244,27 @@ globle void AddNodeFromAlpha(
 	oneNode->next = NULL;
 	int flag = 0;
 	struct JoinNodeList *oneListNode = NULL;
-	//oneNode->timeTag = time;
-#if THREAD
-#if !CSECTION
-	EnterCriticalSection(&g_cs);
-#else
-	EnterCriticalSection(&(curNode->nodeSection));
 	
+
+	EnterCriticalSection(&(curNode->nodeSection));
 	cur_partialmatch_time[0] = theFact->timestamp;
-#endif
-#endif
+
+
 #if SPEEDUP
 	if (curNode->activeJoinNodeListHead->next == NULL)
 	{
 
-		//curNode->activeJoinNodeListHead->next = oneNode;
-		//oneNode->pre = curNode->activeJoinNodeListHead;
+		
 		curNode->activeJoinNodeListTail->next = oneNode;
 		oneNode->pre = curNode->activeJoinNodeListTail;
 		curNode->activeJoinNodeListTail = oneNode;
 #if DATASTRUCT
-		//if (curNode->numOfActiveNode == 1)
-		{
 			oneListNode = (struct JoinNodeList*)malloc(sizeof(struct JoinNodeList));
 			oneListNode->join = curNode;
 			oneListNode->next = NULL;
 			oneListNode->pre = NULL;
 			flag = 1;
-		}
 #endif
-
 	}
 	else
 	{
@@ -337,47 +296,22 @@ globle void AddNodeFromAlpha(
 		curNode->activeJoinNodeListTail = oneNode;
 #endif
 	}
-	//curNode->activeJoinNodeListTail = oneNode;
+	
 	curNode->numOfActiveNode += 1;
-#if CSECTION
+
 	LeaveCriticalSection(&(curNode->nodeSection));
-#endif
 
-	if (flag){
-#if CSECTION
-		EnterCriticalSection(&g_cs);
-#endif
-		AddList(oneListNode);  //
-#if CSECTION
-		LeaveCriticalSection(&g_cs); 
-#endif
-	}
-
-#else 
-	if (activeNodeHead->next == NULL){ activeNodeHead->next = oneNode; oneNode->pre = activeNodeHead; }
-	else
+	if (flag)
 	{
-		activeNodeTail->next = oneNode;
-		oneNode->pre = activeNodeTail;
-	} 
-	activeNodeTail = oneNode;
+		EnterCriticalSection(&g_cs);
+		AddList(oneListNode);  //
+		LeaveCriticalSection(&g_cs); 
+	}
+ 
 #endif
 #if THREAD
-#if !CSECTION
-	LeaveCriticalSection(&g_cs);
-#endif
-	
-#if !MUTILTHREAD || REALMTHREAD
 	ReleaseSemaphore(g_hSemaphoreBuffer, 1, NULL);
 	totalAddActiveNode += 1;
-#else if
-	if (curNode->threadTag == 0){
-		ReleaseSemaphore(g_hSemaphoreBufferOfThread1, 1, NULL);
-	}
-	else{
-		ReleaseSemaphore(g_hSemaphoreBufferOfThread2, 1, NULL);
-	}
-#endif
 
 #endif
 }
@@ -419,33 +353,25 @@ globle void AddOneActiveNode(
 	oneActiveNode->timeTag = partialMatch->timeTag;
 	int flag = 0;
 	struct JoinNodeList* oneListNode = NULL;
-#if THREAD
-#if !CSECTION
-	EnterCriticalSection(&g_cs);
-#else if
+
+
 	EnterCriticalSection(&(curNode->nodeSection));
-	//if(partialMatch != NULL)cur_partialmatch_time[1] = partialMatch->l_timeStamp;
-#endif
-#endif
 
 #if SPEEDUP
 
 	if (curNode->activeJoinNodeListHead->next == NULL)
 	{
-		//curNode->activeJoinNodeListHead->next = oneActiveNode;
-		//oneActiveNode->pre = curNode->activeJoinNodeListHead;
+		
 		curNode->activeJoinNodeListTail->next = oneActiveNode;
 		oneActiveNode->pre = curNode->activeJoinNodeListTail;
 		curNode->activeJoinNodeListTail = oneActiveNode;
 #if DATASTRUCT
-		//if (curNode->numOfActiveNode == 1)
-		{
+		
 			oneListNode = (struct JoinNodeList*)malloc(sizeof(struct JoinNodeList));
 			oneListNode->join = curNode;
 			oneListNode->next = NULL;
 			oneListNode->pre = NULL;
 			flag = 1;
-		}
 #endif
 	}
 	else
@@ -484,53 +410,22 @@ globle void AddOneActiveNode(
 		curNode->activeJoinNodeListTail = oneActiveNode;
 #endif
 	}
-	//curNode->activeJoinNodeListTail = oneActiveNode; 
+	
 	curNode->numOfActiveNode += 1;
-#if CSECTION
 	LeaveCriticalSection(&curNode->nodeSection);
+
+	if (flag)
+	{
+
+		EnterCriticalSection(&g_cs);
+		AddList(oneListNode);
+		LeaveCriticalSection(&g_cs);
+	}
 #endif
 
-	if (flag){
-#if CSECTION
-		EnterCriticalSection(&g_cs);
-#endif
-		AddList(oneListNode);
-#if CSECTION
-		LeaveCriticalSection(&g_cs);
-#endif
-	}
-#else
-	if (activeNodeHead->next == NULL)
-	{
-		activeNodeHead->next = oneActiveNode;
-		oneActiveNode->pre = activeNodeHead;
-		
-	}
-	else
-	{
-		activeNodeTail->next = oneActiveNode;
-		oneActiveNode->pre = activeNodeTail;
-		
-	}
-	activeNodeTail = oneActiveNode;
-#endif
 #if THREAD
-#if !CSECTION
-	LeaveCriticalSection(&g_cs);
-#endif
-	
-#if !MUTILTHREAD ||REALMTHREAD
 	ReleaseSemaphore(g_hSemaphoreBuffer, 1, NULL);
 	totalAddActiveNode += 1;
-#else if
-	if (curNode->threadTag == 0){
-		ReleaseSemaphore(g_hSemaphoreBufferOfThread1, 1, NULL);
-	}
-	else{
-		ReleaseSemaphore(g_hSemaphoreBufferOfThread2, 1, NULL);
-	}
-#endif
-
 #endif
 	/**/
 #if TEST_PERFORMENCE
@@ -573,11 +468,9 @@ unsigned int __stdcall MoveOnJoinNetworkThread(void *pM)
 	{
 		
 		currentActiveNode = GetBestOneActiveNode(theEnv,threadID);
-		
 
 		if (currentActiveNode == NULL)continue;
-		
-
+	
 		
 		currentJoinNode = currentActiveNode->currentJoinNode;
 		currentPartialMatch = currentActiveNode->currentPartialMatch;

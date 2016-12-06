@@ -1,16 +1,8 @@
-﻿Build started 2016/12/6 21:10:10.
+﻿Build started 2016/12/6 22:47:27.
      1>Project "D:\VS\testCLIPS-master\testCLIPS\testCLIPS\testCLIPS.vcxproj" on node 2 (Build target(s)).
      1>ClCompile:
-         D:\Program Files\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D _LIB /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TC /analyze- /errorReport:prompt ..\..\move.c
-         move.c
-     1>d:\vs\testclips-master\move.c(253): warning C4028: formal parameter 7 different from declaration
-     1>d:\vs\testclips-master\move.c(269): warning C4133: '=' : incompatible types - from 'patrialMacth *' to 'partialMatch *'
-     1>d:\vs\testclips-master\move.c(618): warning C4013: 'EmptyDrive' undefined; assuming extern returning int
-     1>d:\vs\testclips-master\move.c(639): warning C4067: unexpected tokens following preprocessor directive - expected a newline
-     1>d:\vs\testclips-master\move.c(568): warning C4101: 'large_time' : unreferenced local variable
-     1>d:\vs\testclips-master\move.c(565): warning C4101: 'hashOffset' : unreferenced local variable
-     1>d:\vs\testclips-master\move.c(566): warning C4101: 'timeTag' : unreferenced local variable
-     1>d:\vs\testclips-master\move.c(688): warning C4013: 'sin' undefined; assuming extern returning int
+         D:\Program Files\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D _LIB /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TC /analyze- /errorReport:prompt ..\..\drive.c
+         drive.c
        Link:
          D:\Program Files\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"D:\VS\testCLIPS-master\testCLIPS\Debug\testCLIPS.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"D:\VS\testCLIPS-master\testCLIPS\Debug\testCLIPS.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"D:\VS\testCLIPS-master\testCLIPS\Debug\testCLIPS.lib" /MACHINE:X86 Debug\agenda.obj
          Debug\analysis.obj
@@ -188,4 +180,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:01.08
+Time Elapsed 00:00:01.07
