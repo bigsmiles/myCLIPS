@@ -488,6 +488,7 @@ unsigned int __stdcall MoveOnJoinNetworkThread(void *pM)
 
 		if (time_out && currentJoinNode->firstJoin)
 		{
+			//printf("empty network : join : %x, depth: %d %s\n", currentJoinNode, currentJoinNode->depth, theFact->whichDeftemplate->header.name->contents);
 			
 			//currentPartialMatch = CreateAlphaMatch(theEnv, theFact, theMarks, theHeader, currentActiveNode->hashOffset);
 			EnterCriticalSection(&g_move);
@@ -500,7 +501,7 @@ unsigned int __stdcall MoveOnJoinNetworkThread(void *pM)
 			//theFact->factNotOnNodeMask = (theFact->factNotOnNodeMask | (1<<currentJoinNode->depth));
 			EnterCriticalSection(&g_fact_join);
 
-			//printf("before mask: %x\n", theFact->factNotOnNodeMask);
+			//printf("before mask: %s %x\n", theFact->whichDeftemplate->header.name->contents,theFact->factNotOnNodeMask);
 			theFact->factNotOnNodeMask |= (1 << currentJoinNode->numOfTmp);
 			
 			//printf("first join realase : %x %s depth: %d numOfTmp: %d mask: %x\n", theFact,theFact->whichDeftemplate->header.name->contents,currentJoinNode->depth, currentJoinNode->numOfTmp,theFact->factNotOnNodeMask);
@@ -512,7 +513,7 @@ unsigned int __stdcall MoveOnJoinNetworkThread(void *pM)
 		}
 		else if (time_out && currentActiveNode->curPMOnWhichSide == LHS)
 		{
-			
+			//printf("network left : env = %x update on join : %x, depth: %d ,hash = %ld\n", theEnv,currentJoinNode, currentJoinNode->depth,hashValue);
 			UpdateBetaPMLinks(theEnv, currentPartialMatch, lhsBinds, rhsBinds, currentJoinNode, hashValue, enterDirection);
 			//currentPartialMatch->hashValue = hashValue;
 			NetworkAssertLeft(theEnv, currentPartialMatch, currentJoinNode,threadID);
@@ -520,6 +521,7 @@ unsigned int __stdcall MoveOnJoinNetworkThread(void *pM)
 		}
 		else if (time_out && currentActiveNode->curPMOnWhichSide == RHS)
 		{
+			//printf("network right : join : %x, depth: %d ,%s\n", currentJoinNode, currentJoinNode->depth, theFact->whichDeftemplate->header.name->contents);
 			//UpdateBetaPMLinks(theEnv, currentPartialMatch, lhsBinds, rhsBinds, currentJoinNode, hashValue, enterDirection);
 			EnterCriticalSection(&g_move);
 			//currentPartialMatch = CreateAlphaMatch(theEnv, theFact, theMarks, theHeader, currentActiveNode->hashOffset);
@@ -537,9 +539,9 @@ unsigned int __stdcall MoveOnJoinNetworkThread(void *pM)
 			//theFact->factNotOnNodeMask = (theFact->factNotOnNodeMask | (1<<currentJoinNode->depth));
 			//printf("before : %x %d %lld\n", theFact->factNotOnNodeMask, currentJoinNode->numOfTmp,theFact->timestamp);
 			//theFact->factNotOnNodeMask = (theFact->factNotOnNodeMask | (1 << currentJoinNode->numOfTmp));
-			//printf("before mask: %x\n", theFact->factNotOnNodeMask);
+			//printf("before mask: %s %x\n", theFact->whichDeftemplate->header.name->contents,theFact->factNotOnNodeMask);
 			theFact->factNotOnNodeMask |= (1 << currentJoinNode->numOfTmp);
-			//printf("after : %x %d %lld\n", theFact->factNotOnNodeMask, currentJoinNode->numOfTmp,theFact->timestamp);
+			//printf("after : %s %x %d %lld\n", theFact->whichDeftemplate->header.name->contents,theFact->factNotOnNodeMask, currentJoinNode->numOfTmp,theFact->timestamp);
 			//printf("right join realase : %x %s depth: %d numOfTmp: %d mask: %x\n", theFact,theFact->whichDeftemplate->header.name->contents,currentJoinNode->depth, currentJoinNode->numOfTmp, theFact->factNotOnNodeMask);
 			LeaveCriticalSection(&g_fact_join);
 #endif

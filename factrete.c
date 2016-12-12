@@ -704,11 +704,21 @@ globle int FactJNCompVars1(
    if (fact1->theProposition.theFields[e1].type !=
        fact2->theProposition.theFields[e2].type)
      { return((int) hack->fail); }
-
+   /**/
+   INTEGER_HN * fact1_peek = (INTEGER_HN * )fact1->theProposition.theFields[e1].value;
+   INTEGER_HN * fact2_peek = (INTEGER_HN * )fact2->theProposition.theFields[e2].value;
+   if (fact1_peek->contents !=
+	   fact2_peek->contents)
+   {
+	   return((int)hack->fail);
+   }
+   /**/
+   //printf("value = %s %s\n", fact1->theProposition.theFields[e1].value, fact2->theProposition.theFields[e2].value);
+   /**
    if (fact1->theProposition.theFields[e1].value !=
        fact2->theProposition.theFields[e2].value)
      { return((int) hack->fail); }
-
+	**/
    return((int) hack->pass);
   }
 

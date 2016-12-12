@@ -66,7 +66,7 @@ void EnvUserFunctions(void *);
 
 CRITICAL_SECTION g_cs;
 
-CRITICAL_SECTION g_csDebug, g_runDebug, g_move,g_fact_join;//g_csDebug1, g_csDebug2,
+CRITICAL_SECTION g_csDebug, g_runDebug, g_move, g_fact_join, read_fact;//g_csDebug1, g_csDebug2,
 HANDLE g_debug;
 HANDLE g_hSemaphoreBuffer,g_hSemaphoreBufferOfThread1, g_hSemaphoreBufferOfThread2;
 extern int totalAddActiveNode,totalGetActiveNode[4];
@@ -77,9 +77,51 @@ long long search_time = 0, cost_time[4] = { 0 }, run_time[4] = {0};
 long long cur_partialmatch_time[3] = {99999999999,999999999999,999999999999};
 
 int num_of_event;
+LARGE_INTEGER start, end, finish, freq;
 #endif
 
+struct readfactnode{
+	void* theEnv;
+	int numOfEvent;
+	FILE* file;
+};
+unsigned int __stdcall ReadFactThread(void *pM)
+{
+	void *theEnv = ((struct readfactnode*)pM)->theEnv;
+	int numOfEvent = ((struct readfactnode*)pM)->numOfEvent;
+	FILE* pFile = ((struct readfactnode*)pM)->file;
+	char tmpBuffer[200];
+	int line_count = 1;
+	LARGE_INTEGER end;
+	//printf("start %d\n", GetCurrentThreadId());
+	
+	while (fgets(tmpBuffer, 100, pFile))
+	{
 
+		if (line_count++ > num_of_event)break;
+		//EnvAssertString(theEnv, tmpBuffer);
+		/**/
+		
+		struct fact *theFact;
+		//printf("tmpBuffer = %s", tmpBuffer);
+		if ((theFact = StringToFact(theEnv, tmpBuffer)) == NULL) return(NULL);
+
+		theFact->factNotOnNodeMask = 0;
+
+		
+		EnterCriticalSection(&read_fact);
+		char* deftemplate = theFact->whichDeftemplate->header.name->contents;
+		theFact->whichDeftemplate = EnvFindDeftemplate(GetEnvironmentByIndex(0) , (deftemplate));
+		EnvAssert(GetEnvironmentByIndex(0) , (void*)theFact);
+		LeaveCriticalSection(&read_fact);
+		/**/
+
+	}
+	
+	QueryPerformanceCounter(&end);
+	
+	printf("input_time_over : %d %lld ,total: %lf,line_count %lld\n", GetCurrentThreadId(),end.QuadPart, 1.0 * (end.QuadPart - start.QuadPart) / freq.QuadPart, line_count);
+}
 
 int main(
 	int argc,
@@ -91,6 +133,7 @@ int main(
 	void *betaEnv;
 	void *thirdEnv;
 	void *fourEnv;
+	void *fiveEnv;
 
 #if SPINCOUNT
 	InitializeCriticalSection(&g_cs);
@@ -98,11 +141,12 @@ int main(
 	InitializeCriticalSection(&g_runDebug);
 	InitializeCriticalSection(&g_fact_join);
 #else if
-	
-	InitializeCriticalSectionAndSpinCount(&g_cs,0x00000400);
-	InitializeCriticalSectionAndSpinCount(&g_move,0x00000400);
+
+	InitializeCriticalSectionAndSpinCount(&g_cs, 0x00000400);
+	InitializeCriticalSectionAndSpinCount(&g_move, 0x00000400);
 	InitializeCriticalSectionAndSpinCount(&g_runDebug, 0x00000400);
 	InitializeCriticalSectionAndSpinCount(&g_fact_join, 0x00000400);
+	InitializeCriticalSectionAndSpinCount(&read_fact, 0x00000400);
 #endif
 
 #if !MUTILTHREAD
@@ -112,20 +156,23 @@ int main(
 	g_hSemaphoreBufferOfThread2 = CreateSemaphore(NULL, 0, 20000, NULL);
 #endif
 	//g_debug = CreateSemaphore(NULL, 0, 1, NULL);
-	HANDLE hThread,hThread1,hThread2;
+	HANDLE hThread, hThread1, hThread2;
+	HANDLE factThread1, factThread2;
 #endif
 
-	
+
 	theEnv = CreateEnvironment();
 #if THREAD
 	betaEnv = CreateEnvironment();
 	thirdEnv = CreateEnvironment();
 	fourEnv = CreateEnvironment();
+	fiveEnv = CreateEnvironment();
 #endif
-	
+
 	//char rule_file_path[50] = "D:\\VS\\testCLPS\\testCLIPS\\Debug\\CLIPSRule_test.clp";
 	//char rule_file_path[50] = "D:\\VS\\testCLPS\\testCLIPS\\Debug\\CLIPSRule_824.clp";
 	char rule_file_path[50] = "D:\\VS\\testCLPS\\testCLIPS\\Debug\\CLIPSRule_826.clp";
+	char rule_file_path2[50] = "D:\\VS\\testCLPS\\testCLIPS\\Debug\\CLIPSRule_1211.clp";
 	//char rule_file_path[50] = "D:\\VS\\testCLPS\\testCLIPS\\Debug\\CLIPSRule_1025.clp";
 	//char rule_file_path[50] = "D:\\VS\\testCLPS\\testCLIPS\\Debug\\CLIPSRule_723.clp";
 
@@ -135,7 +182,8 @@ int main(
 
 	EnvLoad(betaEnv, rule_file_path);
 	EnvLoad(thirdEnv, rule_file_path);
-	EnvLoad(fourEnv, rule_file_path);
+	EnvLoad(fourEnv, rule_file_path2);
+	EnvLoad(fiveEnv, rule_file_path2);
 
 	struct ThreadNode *env1 = (struct ThreadNode*)malloc(sizeof(struct ThreadNode));
 	env1->theEnv = betaEnv; env1->threadTag = 1;
@@ -146,7 +194,7 @@ int main(
 	
 #endif	
 	//第一个参数是event or fact的个数，第二个参数是并行或串行parallel_serial，并行为1，串行为0
-	num_of_event = 20000;
+	num_of_event = 2;
 	int parallel_serial = 1;
 	if (argc > 1) num_of_event = atoi(argv[1]);
 	if (argc > 2) parallel_serial = atoi(argv[2]);
@@ -162,7 +210,7 @@ int main(
 		SetThreadAffinityMask(hThread1, 1 << 2);//线程指定在某个cpu
 
 		hThread2 = (HANDLE)_beginthreadex(NULL, 0, MoveOnJoinNetworkThread, env3, 0, NULL);
-		SetThreadAffinityMask(hThread2, 1 << 3);//线程指定在某个cpu运行
+		SetThreadAffinityMask(hThread2, 1 << 3);//线程指定在某个cpu运行 
 	}
 	/**/
 #endif
@@ -170,16 +218,22 @@ int main(
 	
 	//char fact_file_path[50] = "D:\\VS\\stdCLIPS\\Debug\\CLIPSFact_test.txt"; 
 	char fact_file_path[50] = "D:\\VS\\stdCLIPS\\Debug\\CLIPSFact_105.txt";
+	//char fact_file_path2[50] = "D:\\VS\\stdCLIPS\\Debug\\CLIPSFact_128.txt";
 	//char fact_file_path[50] = "D:\\VS\\stdCLIPS\\Debug\\CLIPSFact_126.txt";
 	//char fact_file_path[50] = "D:\\VS\\stdCLIPS\\Debug\\CLIPSFact_723.txt";
-	
+
+	/**/
+	//char fact_file_path[50] = "D:\\VS\\stdCLIPS\\Debug\\read_thread_test_1.txt";
+	char fact_file_path2[50] = "D:\\VS\\stdCLIPS\\Debug\\read_thread_test_2.txt";
+	/**/
 	FILE *pFile = fopen(fact_file_path, "r");
+	FILE *pFile2 = fopen(fact_file_path2, "r");
 	
-	if (pFile == NULL){
+	if (pFile == NULL || pFile2 == NULL){
 		printf("file error!\n");
 	}
 	
-	LARGE_INTEGER start,end,finish,freq;
+	//LARGE_INTEGER start,end,finish,freq;
 	
 	QueryPerformanceFrequency(&freq);
 	QueryPerformanceCounter(&start);
@@ -188,6 +242,19 @@ int main(
 	
 	long long line_count = 1;
 	char tmpBuffer[200];
+	/**
+	struct readfactnode* factnode1 = (struct factreadnode*) malloc(sizeof(struct readfactnode));
+	factnode1->theEnv = fiveEnv; factnode1->file = pFile; factnode1->numOfEvent = num_of_event;
+	struct readfactnode* factnode2 = (struct factreadnode*)malloc(sizeof(struct readfactnode));
+	factnode2->theEnv = fiveEnv; factnode2->file = pFile2; factnode2->numOfEvent = num_of_event;
+
+	factThread1 = (HANDLE)_beginthreadex(NULL, 0, ReadFactThread, factnode1, 0, NULL);
+	SetThreadAffinityMask(factThread1, 1 << 1);//线程指定在某个cpu运行
+	//Sleep(20000);
+	//factThread2 = (HANDLE)_beginthreadex(NULL, 0, ReadFactThread, factnode2, 0, NULL);
+	//SetThreadAffinityMask(factThread2, 1 << 2);//线程指定在某个cpu运行
+	**/
+	/**/
 	while (fgets(tmpBuffer, 100, pFile))
 	{
 		
@@ -195,10 +262,28 @@ int main(
 
 		//if(line_count % 5 == 0)Sleep(1);
 		EnvAssertString(theEnv, tmpBuffer);
+		//struct fact* theFact;
+		//if ((theFact = StringToFact(theEnv, tmpBuffer)) == NULL) return(NULL);
+		//EnvAssert(theEnv, (void *)theFact);
 		
 	} 
+	line_count = 1;
+	/**
+	while (fgets(tmpBuffer, 100, pFile2))
+	{
+
+		if (line_count++ > num_of_event)break;
+
+		//if(line_count % 5 == 0)Sleep(1);
+		EnvAssertString(theEnv, tmpBuffer);
+		//struct fact* theFact;
+		//if ((theFact = StringToFact(theEnv, tmpBuffer)) == NULL) return(NULL);
+		//EnvAssert(theEnv, (void *)theFact);
+
+	}
+	**/
 	QueryPerformanceCounter(&end);
-	printf("input_time_over %lld ,total: %lld,line_count %lld\n", end.QuadPart,(end.QuadPart - start.QuadPart) / freq.QuadPart,line_count);
+	printf("input_time_over %lld ,total: %lf,line_count %lld\n", end.QuadPart, 1.0 * (end.QuadPart - start.QuadPart) / freq.QuadPart, line_count);
 	
 	if (parallel_serial == 0)
 	{
@@ -211,6 +296,7 @@ int main(
 		SetThreadAffinityMask(hThread2, 1 << 3);//线程指定在某个cpu运行
 	}
 	Sleep(50000);
+	
 	//CommandLoop(theEnv);
 #if !THREAD 
 	CommandLoop(theEnv);

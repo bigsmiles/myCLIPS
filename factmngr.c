@@ -93,6 +93,8 @@
    static void                    RemoveGarbageFacts(void *);
    static void                    DeallocateFactData(void *);
 
+   extern CRITICAL_SECTION read_fact;
+
 /**************************************************************/
 /* InitializeFacts: Initializes the fact data representation. */
 /*   Facts are only available when both the defrule and       */
@@ -1511,9 +1513,19 @@ globle void *EnvAssertString(
    if ((theFact = StringToFact(theEnv,theString)) == NULL) return(NULL);
 #if SLIDING_WINDOW
    theFact->factNotOnNodeMask = 0;
+  
 #endif
-
+   /**/
    return((void *) EnvAssert(theEnv,(void *) theFact));
+   EnterCriticalSection(&read_fact);
+   
+   //theEnv = GetEnvironmentByIndex(0);
+   char* deftemplate = theFact->whichDeftemplate->header.name->contents;
+   theFact->whichDeftemplate = EnvFindDeftemplate(GetEnvironmentByIndex(0), (deftemplate));
+   EnvAssert(GetEnvironmentByIndex(0), (void*)theFact);
+   //return((void *) EnvAssert(theEnv,(void *) theFact));
+   LeaveCriticalSection(&read_fact);
+   /**/
   }
 
 /******************************************************/

@@ -223,16 +223,16 @@ globle void UpdateBetaPMLinks(
    
    if (side == LHS)
      {
-	   /**
+	   /**/
       thePM->nextInMemory = theMemory->beta[betaLocation];
       if (theMemory->beta[betaLocation] != NULL)
         { theMemory->beta[betaLocation]->prevInMemory = thePM; }
       theMemory->beta[betaLocation] = thePM;
 	
-	  **/
+	  /**/
 	  
 #if SLIDING_WINDOW
-	   /**/
+	   /**
 	   if (theMemory->beta_last[betaLocation] != NULL)
 	   //if (theMemory->beta[betaLocation] != NULL)
 	   {
@@ -242,7 +242,7 @@ globle void UpdateBetaPMLinks(
 	   else{ theMemory->beta[betaLocation] = thePM; }
 
 	   theMemory->beta_last[betaLocation] = thePM; thePM->nextInMemory = NULL;
-	   /**/
+	   **/
 #endif
 	 
 	   /**
@@ -1180,9 +1180,10 @@ globle struct partialMatch *GetAlphaMemory(
    struct alphaMemoryHash *theAlphaMemory;
    unsigned long hashValue;
 
+  
    hashValue = AlphaMemoryHashValue(theHeader,hashOffset);
    theAlphaMemory = FindAlphaMemory(theEnv,theHeader,hashValue);
-
+   //printf("in getalpha : hash = %d alphamemo = %x\n", hashValue,theAlphaMemory);
    if (theAlphaMemory == NULL)
      { return NULL; }
 
@@ -1223,7 +1224,7 @@ globle struct partialMatch *GetLeftBetaMemory(
    unsigned long betaLocation;
    
    betaLocation = hashValue % theJoin->leftMemory->size;
-
+   //printf("in left Beta Memory: hash = %d %x\n", hashValue, theJoin->leftMemory->beta[betaLocation]);
    return theJoin->leftMemory->beta[betaLocation];
   }
 
@@ -1454,7 +1455,7 @@ static struct alphaMemoryHash *FindAlphaMemory(
    struct alphaMemoryHash *theAlphaMemory;
       
    theAlphaMemory = DefruleData(theEnv)->AlphaMemoryTable[hashValue];
-
+   //printf("find alpha = %d hash = %d\n", theAlphaMemory,hashValue);
    if (theAlphaMemory != NULL)
      {
       while ((theAlphaMemory != NULL) && (theAlphaMemory->owner != theHeader))

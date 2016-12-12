@@ -630,7 +630,11 @@ static void ProcessFactAlphaMatch(
 	  long long time1 = (long long)large_time1.QuadPart;
 #endif
 	  /**/
+	  EnterCriticalSection(&g_move);
+	  theEnv = GetEnvironmentByIndex(0);
+	  //printf(" create theMatch :%s %d %d hash=%d\n", theFact->whichDeftemplate->header.name->contents, listOfJoins->depth,listOfJoins->numOfTmp,hashValue);
 	  AddNodeFromAlpha(theEnv,listOfJoins,hashValue,theMarks,theFact,(struct patternNodeHeader *)&thePattern->header,theMatch);
+	  LeaveCriticalSection(&g_move);
 	  /**/
 #if TEST_PERFORMENCE
 	  LARGE_INTEGER large_time2;
