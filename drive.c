@@ -78,8 +78,7 @@
    extern long long cur_partialmatch_time[3];
    extern FILE* print_file[3];
 #if SLIDING_WINDOW
-#define WINDOW_SIZE (2760000*1)
-//#define WINDOW_SIZE (5)
+#define WINDOW_SIZE (2760000*300)
 #define FREEPM 1
 #endif
 /************************************************/
@@ -160,7 +159,7 @@ globle void NetworkAssertRight(
    /* are stored in the left beta memory of the join.     */
    /*=====================================================*/
 
-   //printf("network right get left: hash = %d\n", rhsBinds->hashValue);
+  
    lhsBinds = GetLeftBetaMemory(join,rhsBinds->hashValue);
 
 #if DEVELOPER
@@ -205,8 +204,7 @@ globle void NetworkAssertRight(
    long long lhsBinds_l_time;
    long long lhsBinds_r_time;
 #endif
-   //printf("network right: lhs = %x join: %x hash = %ld\n", lhsBinds,join,rhsBinds->hashValue);
-   //printf("network right %x %x %s %d %d\n", lhsBinds,join,((struct fact*)(rhsBinds->binds[0].gm.theMatch->matchingItem))->whichDeftemplate->header.name->contents, join->depth, join->numOfTmp);
+  
    while (lhsBinds != NULL)
      {
       nextBind = lhsBinds->nextInMemory;
@@ -341,7 +339,7 @@ globle void NetworkAssertRight(
       /* all tests were satisfied, etc.), then perform the  */
       /* appropriate action given the logic of this join.   */
       /*====================================================*/
-	 // printf("%%%%%%exprResult = %d\n", exprResult);
+	
       if (exprResult != FALSE)
         {
          if (join->patternIsExists)
@@ -439,7 +437,7 @@ globle void NetworkAssertLeft(
 	   r_time = lhsBinds->r_timeStamp;
 #endif
 	   search_time = time;
-	   
+	   if (time - l_time > WINDOW_SIZE)return;
 	   printf("%s  %lld \n", join->ruleToActivate->header.name->contents,time);
 	  
 	   //printf("%lld \n", time);
@@ -467,7 +465,7 @@ globle void NetworkAssertLeft(
    /*==================================================*/
 
    entryHashValue = lhsBinds->hashValue;
-   //printf("network left: get alpha: entryhash = %d\n", entryHashValue);
+ 
    if (join->joinFromTheRight)
      { rhsBinds = GetRightBetaMemory(join,entryHashValue); }
    else
@@ -532,7 +530,7 @@ globle void NetworkAssertLeft(
    /**/
    long long factTime;
 #endif
-   //printf("network left rhsBinds: %x\n",rhsBinds);
+  
    while (rhsBinds != NULL)
      {
 
@@ -550,7 +548,7 @@ globle void NetworkAssertLeft(
 		   {
 			   flag = 0;
 		   }
-		   //printf("network left fact: flag = %d %s %d %d mask = %x\n", flag,curFact->whichDeftemplate->header.name->contents, join->depth, join->numOfTmp, curFact->factNotOnNodeMask);
+		  
 #endif
 		 
 #if SLIDING_WINDOW
@@ -582,7 +580,7 @@ globle void NetworkAssertLeft(
 			   {
 				   /**/
 				   if (alphaHash != NULL){
-					   //printf("NULL alpha\n");
+					  
 					   alphaHash->alphaMemory = rhsBinds;
 					   //alphaHash->endOfQueue = rhsBinds;
 				   }
@@ -612,7 +610,8 @@ globle void NetworkAssertLeft(
 	  
 #endif	   
       join->memoryCompares++;
-	  //printf("########## %s\n", ((struct fact*)(rhsBinds->binds[0].gm.theMatch->matchingItem))->whichDeftemplate->header.name->contents);
+	 
+
 
       /*===================================================*/
       /* If the join has no expression associated with it, */
@@ -640,7 +639,7 @@ globle void NetworkAssertLeft(
          EngineData(theEnv)->GlobalRHSBinds = rhsBinds;
          
          exprResult = EvaluateJoinExpression(theEnv,join->networkTest,join);
-		 //printf("###########expr result =  %d\n", exprResult);
+		
          if (EvaluationData(theEnv)->EvaluationError)
            {
             if (join->patternIsNegated) exprResult = TRUE;
@@ -817,7 +816,7 @@ globle intBool EvaluateJoinExpression(
 
          oldArgument = EvaluationData(theEnv)->CurrentExpression;
          EvaluationData(theEnv)->CurrentExpression = joinExpr;
-		 //printf("joinexpr = %s\n", joinExpr->value);
+		
          result = (*EvaluationData(theEnv)->PrimitivesArray[joinExpr->type]->evaluateFunction)(theEnv,joinExpr->value,&theResult);
          EvaluationData(theEnv)->CurrentExpression = oldArgument;
         }
@@ -1113,7 +1112,7 @@ globle void PPDrive(
       UpdateBetaPMLinks(theEnv,linker,lhsBinds,rhsBinds,listOfJoins->join,hashValue,listOfJoins->enterDirection);
 	 
 #endif    
-	  //printf("ppDrive\n");
+	  
       if (listOfJoins->enterDirection == LHS)
         { 
 #if !THREAD
@@ -1208,7 +1207,6 @@ void EmptyDrive(
    /*======================================================*/
 
    join->memoryCompares++;
-   //printf("empty network: %s %x %d \n", ((struct fact*)(rhsBinds->binds[0].gm.theMatch->matchingItem))->whichDeftemplate->header.name->contents, join, join->depth);
    if (join->networkTest != NULL)
      {
 

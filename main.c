@@ -93,28 +93,23 @@ unsigned int __stdcall ReadFactThread(void *pM)
 	char tmpBuffer[200];
 	int line_count = 1;
 	LARGE_INTEGER end;
-	//printf("start %d\n", GetCurrentThreadId());
 	
 	while (fgets(tmpBuffer, 100, pFile))
 	{
 
 		if (line_count++ > num_of_event)break;
-		//EnvAssertString(theEnv, tmpBuffer);
-		/**/
+		
 		
 		struct fact *theFact;
-		//printf("tmpBuffer = %s", tmpBuffer);
+		
 		if ((theFact = StringToFact(theEnv, tmpBuffer)) == NULL) return(NULL);
-
 		theFact->factNotOnNodeMask = 0;
 
-		
 		EnterCriticalSection(&read_fact);
 		char* deftemplate = theFact->whichDeftemplate->header.name->contents;
 		theFact->whichDeftemplate = EnvFindDeftemplate(GetEnvironmentByIndex(0) , (deftemplate));
 		EnvAssert(GetEnvironmentByIndex(0) , (void*)theFact);
 		LeaveCriticalSection(&read_fact);
-		/**/
 
 	}
 	
@@ -134,6 +129,7 @@ int main(
 	void *thirdEnv;
 	void *fourEnv;
 	void *fiveEnv;
+	void *sixEnv;
 
 #if SPINCOUNT
 	InitializeCriticalSection(&g_cs);
@@ -167,12 +163,14 @@ int main(
 	thirdEnv = CreateEnvironment();
 	fourEnv = CreateEnvironment();
 	fiveEnv = CreateEnvironment();
+	sixEnv = CreateEnvironment();
 #endif
 
 	//char rule_file_path[50] = "D:\\VS\\testCLPS\\testCLIPS\\Debug\\CLIPSRule_test.clp";
-	//char rule_file_path[50] = "D:\\VS\\testCLPS\\testCLIPS\\Debug\\CLIPSRule_824.clp";
-	char rule_file_path[50] = "D:\\VS\\testCLPS\\testCLIPS\\Debug\\CLIPSRule_826.clp";
-	char rule_file_path2[50] = "D:\\VS\\testCLPS\\testCLIPS\\Debug\\CLIPSRule_1211.clp";
+	char rule_file_path[50] = "D:\\VS\\testCLPS\\testCLIPS\\Debug\\CLIPSRule_824.clp";
+	char rule_file_path2[60] = "D:\\VS\\testCLPS\\testCLIPS\\Debug\\CLIPSRule_824_templ.clp";
+	//char rule_file_path[50] = "D:\\VS\\testCLPS\\testCLIPS\\Debug\\CLIPSRule_826.clp";
+	//char rule_file_path2[50] = "D:\\VS\\testCLPS\\testCLIPS\\Debug\\CLIPSRule_1211.clp";
 	//char rule_file_path[50] = "D:\\VS\\testCLPS\\testCLIPS\\Debug\\CLIPSRule_1025.clp";
 	//char rule_file_path[50] = "D:\\VS\\testCLPS\\testCLIPS\\Debug\\CLIPSRule_723.clp";
 
@@ -184,6 +182,7 @@ int main(
 	EnvLoad(thirdEnv, rule_file_path);
 	EnvLoad(fourEnv, rule_file_path2);
 	EnvLoad(fiveEnv, rule_file_path2);
+	EnvLoad(sixEnv, rule_file_path2);
 
 	struct ThreadNode *env1 = (struct ThreadNode*)malloc(sizeof(struct ThreadNode));
 	env1->theEnv = betaEnv; env1->threadTag = 1;
@@ -205,35 +204,41 @@ int main(
 	if (parallel_serial == 1)
 	{
 		hThread = (HANDLE)_beginthreadex(NULL, 0, MoveOnJoinNetworkThread, env1, 0, NULL);
-		SetThreadAffinityMask(hThread, 1 << 1);//线程指定在某个cpu运行
-		hThread1 = (HANDLE)_beginthreadex(NULL, 0, MoveOnJoinNetworkThread, env2, 0, NULL);
-		SetThreadAffinityMask(hThread1, 1 << 2);//线程指定在某个cpu
+		//SetThreadAffinityMask(hThread, 1 << 1);//线程指定在某个cpu运行
+		//hThread1 = (HANDLE)_beginthreadex(NULL, 0, MoveOnJoinNetworkThread, env2, 0, NULL);
+		//SetThreadAffinityMask(hThread1, 1 << 2);//线程指定在某个cpu
 
-		hThread2 = (HANDLE)_beginthreadex(NULL, 0, MoveOnJoinNetworkThread, env3, 0, NULL);
-		SetThreadAffinityMask(hThread2, 1 << 3);//线程指定在某个cpu运行 
+		//hThread2 = (HANDLE)_beginthreadex(NULL, 0, MoveOnJoinNetworkThread, env3, 0, NULL);
+		//SetThreadAffinityMask(hThread2, 1 << 3);//线程指定在某个cpu运行 
 	}
 	/**/
 #endif
 
 	
 	//char fact_file_path[50] = "D:\\VS\\stdCLIPS\\Debug\\CLIPSFact_test.txt"; 
-	char fact_file_path[50] = "D:\\VS\\stdCLIPS\\Debug\\CLIPSFact_105.txt";
+	
 	//char fact_file_path2[50] = "D:\\VS\\stdCLIPS\\Debug\\CLIPSFact_128.txt";
 	//char fact_file_path[50] = "D:\\VS\\stdCLIPS\\Debug\\CLIPSFact_126.txt";
-	//char fact_file_path[50] = "D:\\VS\\stdCLIPS\\Debug\\CLIPSFact_723.txt";
+	
 
+	/**
+	char fact_file_path[50] = "D:\\VS\\stdCLIPS\\Debug\\CLIPSFact_105.txt";
+	char fact_file_path2[50] = "D:\\VS\\stdCLIPS\\Debug\\CLIPSFact1.txt";
+	char fact_file_path3[50] = "D:\\VS\\stdCLIPS\\Debug\\CLIPSFact2.txt";
+	**/
 	/**/
-	//char fact_file_path[50] = "D:\\VS\\stdCLIPS\\Debug\\read_thread_test_1.txt";
-	char fact_file_path2[50] = "D:\\VS\\stdCLIPS\\Debug\\read_thread_test_2.txt";
+	char fact_file_path[50] = "D:\\VS\\stdCLIPS\\Debug\\CLIPSFact_723.txt";
+	char fact_file_path2[50] = "D:\\VS\\stdCLIPS\\Debug\\CLIPSFact_stock1.txt";
+	char fact_file_path3[50] = "D:\\VS\\stdCLIPS\\Debug\\CLIPSFact_stock2.txt";
 	/**/
 	FILE *pFile = fopen(fact_file_path, "r");
 	FILE *pFile2 = fopen(fact_file_path2, "r");
+	FILE *pFile3 = fopen(fact_file_path3, "r");
 	
-	if (pFile == NULL || pFile2 == NULL){
+	if (pFile == NULL || pFile2 == NULL || pFile3 == NULL){
 		printf("file error!\n");
 	}
 	
-	//LARGE_INTEGER start,end,finish,freq;
 	
 	QueryPerformanceFrequency(&freq);
 	QueryPerformanceCounter(&start);
@@ -242,48 +247,30 @@ int main(
 	
 	long long line_count = 1;
 	char tmpBuffer[200];
-	/**
+#if 0
 	struct readfactnode* factnode1 = (struct factreadnode*) malloc(sizeof(struct readfactnode));
-	factnode1->theEnv = fiveEnv; factnode1->file = pFile; factnode1->numOfEvent = num_of_event;
+	factnode1->theEnv = sixEnv; factnode1->file = pFile2; factnode1->numOfEvent = num_of_event;
 	struct readfactnode* factnode2 = (struct factreadnode*)malloc(sizeof(struct readfactnode));
-	factnode2->theEnv = fiveEnv; factnode2->file = pFile2; factnode2->numOfEvent = num_of_event;
+	factnode2->theEnv = fiveEnv; factnode2->file = pFile3; factnode2->numOfEvent = num_of_event;
 
 	factThread1 = (HANDLE)_beginthreadex(NULL, 0, ReadFactThread, factnode1, 0, NULL);
-	SetThreadAffinityMask(factThread1, 1 << 1);//线程指定在某个cpu运行
-	//Sleep(20000);
-	//factThread2 = (HANDLE)_beginthreadex(NULL, 0, ReadFactThread, factnode2, 0, NULL);
-	//SetThreadAffinityMask(factThread2, 1 << 2);//线程指定在某个cpu运行
-	**/
-	/**/
+	//SetThreadAffinityMask(factThread1, 1 << 2);//线程指定在某个cpu运行
+	factThread2 = (HANDLE)_beginthreadex(NULL, 0, ReadFactThread, factnode2, 0, NULL);
+	//SetThreadAffinityMask(factThread2, 1 << 3);//线程指定在某个cpu运行
+	
+#else
+	num_of_event = num_of_event;
 	while (fgets(tmpBuffer, 100, pFile))
 	{
 		
 		if (line_count++ > num_of_event)break;
 
-		//if(line_count % 5 == 0)Sleep(1);
 		EnvAssertString(theEnv, tmpBuffer);
-		//struct fact* theFact;
-		//if ((theFact = StringToFact(theEnv, tmpBuffer)) == NULL) return(NULL);
-		//EnvAssert(theEnv, (void *)theFact);
-		
 	} 
-	line_count = 1;
-	/**
-	while (fgets(tmpBuffer, 100, pFile2))
-	{
-
-		if (line_count++ > num_of_event)break;
-
-		//if(line_count % 5 == 0)Sleep(1);
-		EnvAssertString(theEnv, tmpBuffer);
-		//struct fact* theFact;
-		//if ((theFact = StringToFact(theEnv, tmpBuffer)) == NULL) return(NULL);
-		//EnvAssert(theEnv, (void *)theFact);
-
-	}
-	**/
 	QueryPerformanceCounter(&end);
 	printf("input_time_over %lld ,total: %lf,line_count %lld\n", end.QuadPart, 1.0 * (end.QuadPart - start.QuadPart) / freq.QuadPart, line_count);
+#endif
+	
 	
 	if (parallel_serial == 0)
 	{
@@ -295,7 +282,7 @@ int main(
 		hThread2 = (HANDLE)_beginthreadex(NULL, 0, MoveOnJoinNetworkThread, env3, 0, NULL);
 		SetThreadAffinityMask(hThread2, 1 << 3);//线程指定在某个cpu运行
 	}
-	Sleep(50000);
+	Sleep(100000);
 	
 	//CommandLoop(theEnv);
 #if !THREAD 
