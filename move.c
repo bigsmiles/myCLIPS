@@ -572,6 +572,208 @@ unsigned int __stdcall MoveOnJoinNetworkThread(void *pM)
 	
 	return 0;
 }
+
+
+/*
+调度的主要函数，从被激活的beta节点队列中，选择前面可以使用的(没有被其他线程处理)节点
+*/
+globle struct activeJoinNode* GetBestOneActiveNodeOnSet(void *theEnv, int threadID)
+{
+	struct activeJoinNode *rtnNode = NULL;
+	struct activeJoinNode *pNode = NULL;
+	struct JoinNodeList *oneListNode = NULL;
+	struct JoinNodeList *curListNode = NULL;
+	/**/
+#if TEST_PERFORMENCE
+	LARGE_INTEGER large_time_start;
+	QueryPerformanceCounter(&large_time_start);
+
+	long long start = (long long)large_time_start.QuadPart;
+#endif
+	/**/
+
+
+	EnterCriticalSection(&g_cs);
+
+	if (joinNodeListHead->next != NULL)//return NULL;
+		oneListNode = joinNodeListHead->next;
+
+	struct joinNode *tmp = NULL;
+
+	while (oneListNode != NULL)
+	{
+
+		if (oneListNode->join->threadTag != -1)
+		{
+			tmp = oneListNode->join;
+			curListNode = oneListNode;
+			tmp->threadTag = -1;
+			break;
+		}
+
+		oneListNode = oneListNode->next;
+	}
+
+
+	LeaveCriticalSection(&g_cs);
+
+	if (oneListNode == NULL){
+		return NULL;
+	}
+
+	EnterCriticalSection(&(tmp->nodeSection));
+
+	rtnNode = tmp->activeJoinNodeListHead->next;
+	tmp->numOfActiveNode = 0;
+	tmp->activeJoinNodeListHead->next = NULL;
+	tmp->activeJoinNodeListTail = tmp->activeJoinNodeListHead;
+
+	EnterCriticalSection(&g_cs);
+
+	if (curListNode->next == NULL){
+		struct JoinNodeList* p = curListNode->pre;
+		p->next = NULL;
+		joinNodeListTail = p;
+
+		curListNode->join = NULL;
+		free(curListNode);
+		curListNode = NULL;
+	}
+	else{
+		struct JoinNodeList* p = curListNode->pre;
+		p->next = curListNode->next;
+		curListNode->next->pre = p;
+
+		curListNode->join = NULL;
+		free(curListNode);
+		curListNode = NULL;
+	}
+
+	LeaveCriticalSection(&g_cs);
+
+
+	LeaveCriticalSection(&(tmp->nodeSection));
+
+
+	if (rtnNode != NULL)
+	{
+		WaitForSingleObject(g_hSemaphoreBuffer, INFINITE);
+		/**/
+#if TEST_PERFORMENCE
+		LARGE_INTEGER large_time;
+		QueryPerformanceCounter(&large_time);
+
+		long long time = (long long)large_time.QuadPart;
+		search_time = time;
+		cost_time[threadID] += (time - start);
+		totalGetActiveNode[threadID] += 1;
+#endif
+		/**/
+	}
+
+	return rtnNode;
+}
+unsigned int __stdcall MoveOnJoinNetworkBySetThread(void *pM)
+{
+#if THREAD
+	void *theEnv = ((struct ThreadNode*)pM)->theEnv;
+	int threadID = ((struct ThreadNode*)pM)->threadTag;
+#endif
+	struct activeJoinNode *currentActiveNode, *currentActiveNodeSet;
+	struct joinNode *currentJoinNode;
+	struct partialMatch *currentPartialMatch;
+	struct partialMatch *lhsBinds;
+	struct partialMatch *rhsBinds;
+	unsigned long hashValue;
+	char enterDirection;
+	struct fact *theFact;
+	struct multifieldMarker *theMarks;
+	struct patternNodeHeader *theHeader;
+	unsigned long hashOffset;
+	long long timeTag;
+
+	LARGE_INTEGER large_time;
+	LARGE_INTEGER start_time, end_time;
+
+	int time_out = 1;
+	while (1)
+	{
+		currentJoinNode = NULL;
+		currentActiveNodeSet = NULL;
+		currentActiveNodeSet = GetBestOneActiveNodeOnSet(theEnv, threadID);
+		
+		
+		for (currentActiveNode = currentActiveNodeSet; currentActiveNode != NULL; currentActiveNode = currentActiveNodeSet)
+		{
+
+			if (currentActiveNode == NULL)continue;
+			
+
+			currentJoinNode = currentActiveNode->currentJoinNode;
+			currentPartialMatch = currentActiveNode->currentPartialMatch;
+			lhsBinds = currentActiveNode->lhsBinds;
+			rhsBinds = currentActiveNode->rhsBinds;
+			hashValue = currentActiveNode->hashValue;
+			enterDirection = currentActiveNode->curPMOnWhichSide;
+			theFact = (struct fact *) currentActiveNode->theEntity;
+			theMarks = currentActiveNode->markers;
+			theHeader = currentActiveNode->theHeader;
+			
+			time_out = 1;
+			QueryPerformanceCounter(&start_time);
+
+
+			if (time_out && currentJoinNode->firstJoin)
+			{
+
+				currentPartialMatch->owner = theHeader;
+
+				EnterCriticalSection(&g_fact_join);
+				theFact->factNotOnNodeMask |= (1 << currentJoinNode->numOfTmp);
+				LeaveCriticalSection(&g_fact_join);
+
+
+				((struct patternMatch *)theFact->list)->theMatch = currentPartialMatch;
+				EmptyDrive(theEnv, currentJoinNode, currentPartialMatch, threadID);
+			}
+			else if (time_out && currentActiveNode->curPMOnWhichSide == LHS)
+			{
+				UpdateBetaPMLinks(theEnv, currentPartialMatch, lhsBinds, rhsBinds, currentJoinNode, hashValue, enterDirection);
+				NetworkAssertLeft(theEnv, currentPartialMatch, currentJoinNode, threadID);
+
+			}
+			else if (time_out && currentActiveNode->curPMOnWhichSide == RHS)
+			{
+
+				currentPartialMatch->owner = theHeader;
+
+				EnterCriticalSection(&g_fact_join);
+				theFact->factNotOnNodeMask |= (1 << currentJoinNode->numOfTmp);
+				LeaveCriticalSection(&g_fact_join);
+
+				((struct patternMatch *)theFact->list)->theMatch = currentPartialMatch;
+				NetworkAssertRight(theEnv, currentPartialMatch, currentJoinNode, threadID);
+			}
+			else {/*error*/ }
+
+
+			currentActiveNodeSet = currentActiveNodeSet->next;
+			free(currentActiveNode);
+			currentActiveNode = NULL;
+#if TEST_PERFORMENCE
+			QueryPerformanceCounter(&end_time);
+			run_time[threadID] += (end_time.QuadPart - start_time.QuadPart);
+#endif
+		} //end for
+		if (currentJoinNode)
+		{
+			currentJoinNode->threadTag = 0;
+		}
+	}
+
+	return 0;
+}
+
 #endif // THREAD
 globle double SlowDown()
 {

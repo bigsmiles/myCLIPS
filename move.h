@@ -28,5 +28,6 @@ LOCALE void					  AddNodeFromAlpha(void*, struct joinNode*,unsigned long,struct 
 LOCALE double						  SlowDown();
 
 unsigned int __stdcall		  MoveOnJoinNetworkThread(void*);
+unsigned int __stdcall		  MoveOnJoinNetworkBySetThread(void*);
 
 #endif

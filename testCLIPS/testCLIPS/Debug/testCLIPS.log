@@ -1,4 +1,4 @@
-﻿Build started 2016/12/22 20:43:37.
+﻿Build started 2016/12/28 17:02:49.
      1>Project "D:\VS\testCLIPS-master\testCLIPS\testCLIPS\testCLIPS.vcxproj" on node 2 (Build target(s)).
      1>ClCompile:
          D:\Program Files\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D _LIB /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TC /analyze- /errorReport:prompt ..\..\main.c
@@ -6,12 +6,12 @@
      1>d:\vs\testclips-master\main.c(105): warning C4013: 'StringToFact' undefined; assuming extern returning int
      1>d:\vs\testclips-master\main.c(105): warning C4047: '=' : 'fact *' differs in levels of indirection from 'int'
      1>d:\vs\testclips-master\main.c(105): warning C4047: 'return' : 'unsigned int' differs in levels of indirection from 'void *'
-     1>d:\vs\testclips-master\main.c(206): warning C4013: '_beginthreadex' undefined; assuming extern returning int
-     1>d:\vs\testclips-master\main.c(234): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+     1>d:\vs\testclips-master\main.c(217): warning C4013: '_beginthreadex' undefined; assuming extern returning int
+     1>d:\vs\testclips-master\main.c(246): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
                  d:\program files\microsoft visual studio 12.0\vc\include\stdio.h(211) : see declaration of 'fopen'
-     1>d:\vs\testclips-master\main.c(235): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+     1>d:\vs\testclips-master\main.c(247): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
                  d:\program files\microsoft visual studio 12.0\vc\include\stdio.h(211) : see declaration of 'fopen'
-     1>d:\vs\testclips-master\main.c(236): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+     1>d:\vs\testclips-master\main.c(248): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
                  d:\program files\microsoft visual studio 12.0\vc\include\stdio.h(211) : see declaration of 'fopen'
      1>d:\vs\testclips-master\main.c(156): warning C4101: 'factThread2' : unreferenced local variable
      1>d:\vs\testclips-master\main.c(156): warning C4101: 'factThread1' : unreferenced local variable
@@ -193,4 +193,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:01.37
+Time Elapsed 00:00:01.12

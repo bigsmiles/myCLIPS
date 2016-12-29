@@ -168,6 +168,7 @@ int main(
 
 	//char rule_file_path[50] = "D:\\VS\\testCLPS\\testCLIPS\\Debug\\CLIPSRule_test.clp";
 	char rule_file_path[50] = "D:\\VS\\testCLPS\\testCLIPS\\Debug\\CLIPSRule_824.clp";
+	//char rule_file_path[50] = "D:\\VS\\testCLPS\\testCLIPS\\Debug\\CLIPSRule1228.clp";
 	char rule_file_path2[60] = "D:\\VS\\testCLPS\\testCLIPS\\Debug\\CLIPSRule_824_templ.clp";
 	//char rule_file_path[50] = "D:\\VS\\testCLPS\\testCLIPS\\Debug\\CLIPSRule_826.clp";
 	//char rule_file_path2[50] = "D:\\VS\\testCLPS\\testCLIPS\\Debug\\CLIPSRule_1211.clp";
@@ -203,13 +204,24 @@ int main(
 	/**/
 	if (parallel_serial == 1)
 	{
+		/**
 		hThread = (HANDLE)_beginthreadex(NULL, 0, MoveOnJoinNetworkThread, env1, 0, NULL);
 		//SetThreadAffinityMask(hThread, 1 << 1);//线程指定在某个cpu运行
-		//hThread1 = (HANDLE)_beginthreadex(NULL, 0, MoveOnJoinNetworkThread, env2, 0, NULL);
+		hThread1 = (HANDLE)_beginthreadex(NULL, 0, MoveOnJoinNetworkThread, env2, 0, NULL);
 		//SetThreadAffinityMask(hThread1, 1 << 2);//线程指定在某个cpu
 
-		//hThread2 = (HANDLE)_beginthreadex(NULL, 0, MoveOnJoinNetworkThread, env3, 0, NULL);
+		hThread2 = (HANDLE)_beginthreadex(NULL, 0, MoveOnJoinNetworkThread, env3, 0, NULL);
 		//SetThreadAffinityMask(hThread2, 1 << 3);//线程指定在某个cpu运行 
+		**/
+		/**/
+		hThread = (HANDLE)_beginthreadex(NULL, 0, MoveOnJoinNetworkBySetThread, env1, 0, NULL);
+		//SetThreadAffinityMask(hThread, 1 << 1);//线程指定在某个cpu运行
+		hThread1 = (HANDLE)_beginthreadex(NULL, 0, MoveOnJoinNetworkBySetThread, env2, 0, NULL);
+		//SetThreadAffinityMask(hThread1, 1 << 2);//线程指定在某个cpu
+
+		hThread2 = (HANDLE)_beginthreadex(NULL, 0, MoveOnJoinNetworkBySetThread, env3, 0, NULL);
+		//SetThreadAffinityMask(hThread2, 1 << 3);//线程指定在某个cpu运行 
+		/**/
 	}
 	/**/
 #endif
@@ -274,6 +286,7 @@ int main(
 	
 	if (parallel_serial == 0)
 	{
+		/**
 		hThread = (HANDLE)_beginthreadex(NULL, 0, MoveOnJoinNetworkThread, env1, 0, NULL);
 		SetThreadAffinityMask(hThread, 1 << 1);//线程指定在某个cpu运行
 		hThread1 = (HANDLE)_beginthreadex(NULL, 0, MoveOnJoinNetworkThread, env2, 0, NULL);
@@ -281,8 +294,19 @@ int main(
 
 		hThread2 = (HANDLE)_beginthreadex(NULL, 0, MoveOnJoinNetworkThread, env3, 0, NULL);
 		SetThreadAffinityMask(hThread2, 1 << 3);//线程指定在某个cpu运行
+		**/
+
+		/**/
+		hThread = (HANDLE)_beginthreadex(NULL, 0, MoveOnJoinNetworkBySetThread, env1, 0, NULL);
+		//SetThreadAffinityMask(hThread, 1 << 1);//线程指定在某个cpu运行
+		hThread1 = (HANDLE)_beginthreadex(NULL, 0, MoveOnJoinNetworkBySetThread, env2, 0, NULL);
+		//SetThreadAffinityMask(hThread1, 1 << 2);//线程指定在某个cpu
+
+		hThread2 = (HANDLE)_beginthreadex(NULL, 0, MoveOnJoinNetworkBySetThread, env3, 0, NULL);
+		//SetThreadAffinityMask(hThread2, 1 << 3);//线程指定在某个cpu运行 
+		/**/
 	}
-	Sleep(100000);
+	Sleep(50000);
 	
 	//CommandLoop(theEnv);
 #if !THREAD 
