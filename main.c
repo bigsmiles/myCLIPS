@@ -69,7 +69,7 @@ CRITICAL_SECTION g_cs;
 CRITICAL_SECTION g_csDebug, g_runDebug, g_move, g_fact_join, read_fact;//g_csDebug1, g_csDebug2,
 HANDLE g_debug;
 HANDLE g_hSemaphoreBuffer,g_hSemaphoreBufferOfThread1, g_hSemaphoreBufferOfThread2;
-extern int totalAddActiveNode,totalGetActiveNode[4];
+extern long long totalAddActiveNode,totalGetActiveNode[4];
 
 FILE *print_file[3];
 LARGE_INTEGER search_time1, search_time2;
@@ -131,7 +131,7 @@ int main(
 	void *fiveEnv;
 	void *sixEnv;
 
-#if SPINCOUNT
+#if !SPINCOUNT
 	InitializeCriticalSection(&g_cs);
 	InitializeCriticalSection(&g_move);
 	InitializeCriticalSection(&g_runDebug);
@@ -204,16 +204,16 @@ int main(
 	/**/
 	if (parallel_serial == 1)
 	{
-		/**
+		/**/
 		hThread = (HANDLE)_beginthreadex(NULL, 0, MoveOnJoinNetworkThread, env1, 0, NULL);
 		//SetThreadAffinityMask(hThread, 1 << 1);//线程指定在某个cpu运行
 		hThread1 = (HANDLE)_beginthreadex(NULL, 0, MoveOnJoinNetworkThread, env2, 0, NULL);
 		//SetThreadAffinityMask(hThread1, 1 << 2);//线程指定在某个cpu
 
-		hThread2 = (HANDLE)_beginthreadex(NULL, 0, MoveOnJoinNetworkThread, env3, 0, NULL);
+		//hThread2 = (HANDLE)_beginthreadex(NULL, 0, MoveOnJoinNetworkThread, env3, 0, NULL);
 		//SetThreadAffinityMask(hThread2, 1 << 3);//线程指定在某个cpu运行 
-		**/
 		/**/
+		/**
 		hThread = (HANDLE)_beginthreadex(NULL, 0, MoveOnJoinNetworkBySetThread, env1, 0, NULL);
 		//SetThreadAffinityMask(hThread, 1 << 1);//线程指定在某个cpu运行
 		hThread1 = (HANDLE)_beginthreadex(NULL, 0, MoveOnJoinNetworkBySetThread, env2, 0, NULL);
@@ -221,7 +221,7 @@ int main(
 
 		hThread2 = (HANDLE)_beginthreadex(NULL, 0, MoveOnJoinNetworkBySetThread, env3, 0, NULL);
 		//SetThreadAffinityMask(hThread2, 1 << 3);//线程指定在某个cpu运行 
-		/**/
+		**/
 	}
 	/**/
 #endif
@@ -286,7 +286,7 @@ int main(
 	
 	if (parallel_serial == 0)
 	{
-		/**
+		/**/
 		hThread = (HANDLE)_beginthreadex(NULL, 0, MoveOnJoinNetworkThread, env1, 0, NULL);
 		SetThreadAffinityMask(hThread, 1 << 1);//线程指定在某个cpu运行
 		hThread1 = (HANDLE)_beginthreadex(NULL, 0, MoveOnJoinNetworkThread, env2, 0, NULL);
@@ -294,9 +294,9 @@ int main(
 
 		hThread2 = (HANDLE)_beginthreadex(NULL, 0, MoveOnJoinNetworkThread, env3, 0, NULL);
 		SetThreadAffinityMask(hThread2, 1 << 3);//线程指定在某个cpu运行
-		**/
-
 		/**/
+
+		/**
 		hThread = (HANDLE)_beginthreadex(NULL, 0, MoveOnJoinNetworkBySetThread, env1, 0, NULL);
 		//SetThreadAffinityMask(hThread, 1 << 1);//线程指定在某个cpu运行
 		hThread1 = (HANDLE)_beginthreadex(NULL, 0, MoveOnJoinNetworkBySetThread, env2, 0, NULL);
@@ -304,9 +304,9 @@ int main(
 
 		hThread2 = (HANDLE)_beginthreadex(NULL, 0, MoveOnJoinNetworkBySetThread, env3, 0, NULL);
 		//SetThreadAffinityMask(hThread2, 1 << 3);//线程指定在某个cpu运行 
-		/**/
+		**/
 	}
-	Sleep(50000);
+	Sleep(150000);
 	
 	//CommandLoop(theEnv);
 #if !THREAD 
@@ -315,7 +315,7 @@ int main(
 	QueryPerformanceCounter(&finish);
 	
 	printf("search_time: %lld %lf %lf\n", search_time, cost_time[0] * 1.0 / freq.QuadPart, run_time[0] * 1.0 / freq.QuadPart);
-
+	printf("addNode = %lld getNode = %lld %lld %lld %lld", totalAddActiveNode, totalGetActiveNode[0], totalGetActiveNode[1], totalGetActiveNode[2], totalGetActiveNode[3]);
  
 #if THREAD
 	CloseHandle(g_hSemaphoreBufferOfThread1);

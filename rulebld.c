@@ -612,19 +612,36 @@ static struct joinNode *CreateNewJoin(
    newJoin = get_struct(theEnv,joinNode);
 #if THREAD
    //add by xuchao
-   if (theEnv == GetEnvironmentByIndex(0)){
+   if (theEnv == GetEnvironmentByIndex(0))
+   {
 	   newJoin->nodeMaxSalience = newJoin->nodeMinSalience = PatternData(theEnv)->GlobalSalience;
 
 	   newJoin->activeJoinNodeListHead = (struct activeJoinNode*) malloc(sizeof(struct activeJoinNode));
+	   newJoin->activeJoinNodeListHeadFromLeft = (struct activeJoinNode*) malloc(sizeof(struct activeJoinNode));
+	   newJoin->activeJoinNodeListHeadFromRight = (struct activeJoinNode*)malloc(sizeof(struct activeJoinNode));
+
 	   newJoin->activeJoinNodeListHead->next = NULL;
 	   newJoin->activeJoinNodeListHead->pre = NULL;
 	   newJoin->activeJoinNodeListTail = newJoin->activeJoinNodeListHead;
+
+	   newJoin->activeJoinNodeListHeadFromLeft->next = NULL;
+	   newJoin->activeJoinNodeListHeadFromLeft->pre = NULL;
+	   newJoin->activeJoinNodeListTailFromLeft = newJoin->activeJoinNodeListHeadFromLeft;
+
+	   newJoin->activeJoinNodeListHeadFromRight->next = NULL;
+	   newJoin->activeJoinNodeListHeadFromRight->pre = NULL;
+	   newJoin->activeJoinNodeListTailFromRight = newJoin->activeJoinNodeListHeadFromRight;
+
 	   newJoin->numOfActiveNode = 0;
 #if CSECTION
 #if SPINCOUNT
 	   InitializeCriticalSectionAndSpinCount(&(newJoin->nodeSection), 0x00000400);
+	   InitializeCriticalSectionAndSpinCount(&(newJoin->fromLeft), 0x00000400);
+	   InitializeCriticalSectionAndSpinCount(&(newJoin->fromRight), 0x00000400);
 #else if
 	   InitializeCriticalSection(&(newJoin->nodeSection));
+	   InitializeCriticalSection(&(newJoin->fromLeft));
+	   InitializeCriticalSection(&(newJoin->fromRight));
 #endif
 #endif
 #if MUTILTHREAD

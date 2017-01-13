@@ -128,6 +128,10 @@ struct joinNode
    long nodeMinSalience;
    struct activeJoinNode *activeJoinNodeListHead;
    struct activeJoinNode *activeJoinNodeListTail;
+   struct activeJoinNode *activeJoinNodeListHeadFromLeft;
+   struct activeJoinNode *activeJoinNodeListTailFromLeft;
+   struct activeJoinNode *activeJoinNodeListHeadFromRight;
+   struct activeJoinNode *activeJoinNodeListTailFromRight;
    long long numOfActiveNode;
    int threadTag;
    int fromBottomHeight;
@@ -135,6 +139,8 @@ struct joinNode
 #if CSECTION
    //struct JoinNodeList* attachNode;
    CRITICAL_SECTION nodeSection;
+   CRITICAL_SECTION fromLeft;
+   CRITICAL_SECTION fromRight;
 #endif
 #endif
    long long memoryAdds;
@@ -161,6 +167,7 @@ struct JoinNodeList{
 	struct joinNode *join;
 	struct JoinNodeList *next;
 	struct JoinNodeList *pre;
+	int whichSide;
 #if CSECTION
 	//CRITICAL_SECTION nodeSection;
 #endif

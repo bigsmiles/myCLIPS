@@ -633,7 +633,10 @@ static void ProcessFactAlphaMatch(
 	  EnterCriticalSection(&g_move);
 	  theEnv = GetEnvironmentByIndex(0);
 	  //printf(" create theMatch :%s %d %d hash=%d\n", theFact->whichDeftemplate->header.name->contents, listOfJoins->depth,listOfJoins->numOfTmp,hashValue);
+	  
 	  AddNodeFromAlpha(theEnv,listOfJoins,hashValue,theMarks,theFact,(struct patternNodeHeader *)&thePattern->header,theMatch);
+	  
+	  
 	  LeaveCriticalSection(&g_move);
 	  /**/
 #if TEST_PERFORMENCE

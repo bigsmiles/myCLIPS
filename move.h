@@ -25,6 +25,11 @@
 LOCALE void					  MoveOnJoinNetwork(void*);
 LOCALE void					  AddOneActiveNode(void*, struct partialMatch*, struct partialMatch*,struct partialMatch*,struct joinNode*,unsigned long, char,int);
 LOCALE void					  AddNodeFromAlpha(void*, struct joinNode*,unsigned long,struct multifieldMarker*,struct fact*,struct patternNodeHeader*,struct partialMatch*);
+
+LOCALE void					  AddNodeFromLeft(void*, struct partialMatch*, struct partialMatch*, struct partialMatch*, struct joinNode*, unsigned long, char, int);
+LOCALE void					  AddNodeFromRight(void*, struct joinNode*, unsigned long, struct multifieldMarker*, struct fact*, struct patternNodeHeader*, struct partialMatch*);
+
+
 LOCALE double						  SlowDown();
 
 unsigned int __stdcall		  MoveOnJoinNetworkThread(void*);
